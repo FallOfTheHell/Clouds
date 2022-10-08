@@ -31,6 +31,8 @@ import java.util.ResourceBundle;
 public class CloudMainController implements Initializable {
     public ListView<String> clientView;
     public ListView<String> serverView;
+    public TextArea renameClient;
+    public TextArea renameServer;
     private String currentDirectory;
 
 
@@ -52,6 +54,31 @@ public class CloudMainController implements Initializable {
         network.getOutputStream().writeObject(new FileMessage(Path.of(currentDirectory).resolve(fileName)));
     }
 
+    public void deleteFilesClient(ActionEvent actionEvent) throws IOException {
+        String fileName = serverView.getSelectionModel().getSelectedItem();
+        Files.delete(Paths.get("server_files", fileName));
+        fillView(serverView, getFiles(fileName)); // тут обновление очень коряво работает,
+        // не понимаю что нужно передать в getFiles() чтобы нормально список обновлялся...
+    }
+
+    public void deleteFilesServer(ActionEvent actionEvent) throws IOException {
+        String fileName = clientView.getSelectionModel().getSelectedItem();
+        Files.delete(Paths.get(currentDirectory, fileName));
+        fillView(clientView, getFiles(currentDirectory));
+    }
+
+    public void renameFileClient(ActionEvent actionEvent) throws IOException {
+        String fileName = serverView.getSelectionModel().getSelectedItem();
+        Path source0 = Paths.get("server_files", fileName);
+        Files.move(source0, source0.resolveSibling(renameClient.getText()));
+        serverView.getItems().addAll(); // тут тоже почему-то не обновляется список
+    }
+    public void renameFileServer(ActionEvent actionEvent) throws IOException {
+        String fileName = clientView.getSelectionModel().getSelectedItem();
+        Path source0 = Paths.get(currentDirectory, fileName);
+        Files.move(source0, source0.resolveSibling(renameServer.getText()));
+        fillView(clientView, getFiles(currentDirectory));
+    }
 
     public static void deleteDirectory(File directory) throws IOException {
         Files.walk(directory.toPath())
