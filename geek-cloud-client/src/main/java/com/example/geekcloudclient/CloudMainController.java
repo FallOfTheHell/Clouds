@@ -7,9 +7,12 @@ import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
 import model.CloudMessage;
 import model.FileMessage;
 import model.FileRequest;
@@ -34,7 +37,6 @@ public class CloudMainController implements Initializable {
     public TextArea renameClient;
     public TextArea renameServer;
     private String currentDirectory;
-
 
     private Network<ObjectDecoderInputStream, ObjectEncoderOutputStream> network;
 
@@ -70,15 +72,17 @@ public class CloudMainController implements Initializable {
     public void renameFileClient(ActionEvent actionEvent) throws IOException {
         String fileName = serverView.getSelectionModel().getSelectedItem();
         Path source0 = Paths.get("server_files", fileName);
-        Files.move(source0, source0.resolveSibling(renameClient.getText()));
+        Files.move(source0, source0.resolveSibling(renameClient.getText().trim()));
         serverView.getItems().addAll(); // тут тоже почему-то не обновляется список
     }
     public void renameFileServer(ActionEvent actionEvent) throws IOException {
         String fileName = clientView.getSelectionModel().getSelectedItem();
         Path source0 = Paths.get(currentDirectory, fileName);
-        Files.move(source0, source0.resolveSibling(renameServer.getText()));
+        Files.move(source0, source0.resolveSibling(renameServer.getText().trim()));
         fillView(clientView, getFiles(currentDirectory));
     }
+
+
 
     public static void deleteDirectory(File directory) throws IOException {
         Files.walk(directory.toPath())
@@ -167,4 +171,5 @@ public class CloudMainController implements Initializable {
         }
         return List.of();
     }
+
 }
