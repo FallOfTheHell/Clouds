@@ -8,8 +8,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import model.CloudMessage;
 import model.FileMessage;
 import model.FileRequest;
@@ -31,12 +30,14 @@ import java.util.ResourceBundle;
 public class CloudMainController implements Initializable {
     public ListView<String> clientView;
     public ListView<String> serverView;
+    public TextArea renameServer;
+    public TextArea renameClient;
     private String currentDirectory;
-
 
     private Network<ObjectDecoderInputStream, ObjectEncoderOutputStream> network;
 
     private Socket socket;
+    private String directoryServer = "server_files";
 
     private boolean needReadMessages = true;
     private DaemonThreadFactory factory;
@@ -45,12 +46,43 @@ public class CloudMainController implements Initializable {
     public void downloadFile(ActionEvent actionEvent) throws IOException {
         String fileName = serverView.getSelectionModel().getSelectedItem();
         network.getOutputStream().writeObject(new FileRequest(fileName));
+        serverView.refresh();
     }
 
     public void sendToServer(ActionEvent actionEvent) throws IOException {
         String fileName = clientView.getSelectionModel().getSelectedItem();
         network.getOutputStream().writeObject(new FileMessage(Path.of(currentDirectory).resolve(fileName)));
+        clientView.refresh();
     }
+
+    public void deleteFilesServer(ActionEvent actionEvent) throws IOException {
+        String fileName = serverView.getSelectionModel().getSelectedItem();
+        Files.delete(Paths.get(directoryServer, fileName));
+        fillView(serverView, getFiles(fileName));// тут обновление очень коряво работает,
+        // не понимаю что нужно передать в getFiles() чтобы нормально список обновлялся...
+        dir();
+        //serverView.refresh();
+    }
+
+    public void deleteFilesClient(ActionEvent actionEvent) throws IOException {
+        String fileName = clientView.getSelectionModel().getSelectedItem();
+        Files.delete(Paths.get(currentDirectory, fileName));
+        fillView(clientView, getFiles(currentDirectory));
+    }
+
+    public void renameFileServer(ActionEvent actionEvent) throws IOException {
+        String fileName = serverView.getSelectionModel().getSelectedItem();
+        Path source0 = Paths.get(directoryServer, fileName);
+        Files.move(source0, source0.resolveSibling(renameServer.getText().trim()));
+        serverView.refresh();
+    }
+    public void renameFileClient(ActionEvent actionEvent) throws IOException {
+        String fileName = clientView.getSelectionModel().getSelectedItem();
+        Path source0 = Paths.get(currentDirectory, fileName);
+        Files.move(source0, source0.resolveSibling(renameClient.getText().trim()));
+        fillView(clientView, getFiles(currentDirectory));
+    }
+
 
 
     public static void deleteDirectory(File directory) throws IOException {
@@ -67,7 +99,7 @@ public class CloudMainController implements Initializable {
         File f = new File("server_files");
         pathnames = f.list();
         for (String pathname : pathnames) {
-            System.out.println(pathname);
+            System.out.println("Files in server: " + pathname);
         }
     }
 
