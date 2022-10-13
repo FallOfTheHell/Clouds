@@ -39,7 +39,7 @@ public class FileServer {
             log.debug("Server is ready on port: " + 8189);
             channelFuture.channel().closeFuture().sync(); // block
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.debug("Client disconnected " + e);
         } finally {
             auth.shutdownGracefully();
             worker.shutdownGracefully();

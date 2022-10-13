@@ -44,7 +44,7 @@ public class SingUpController {
             counter++;
         }
         if (counter >= 1){
-            System.out.println("Success!");
+            System.out.println("Login user: " + loginText);
             ((Stage)(((Button)ae.getSource()).getScene().getWindow())).close();
             openNewScene("geek-cloud-client.fxml");
         } else {
